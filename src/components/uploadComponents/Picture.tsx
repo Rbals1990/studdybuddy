@@ -21,6 +21,48 @@ export default function Picture() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Functie om afbeelding voor te bewerken voor betere OCR
+  const preprocessImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d")!;
+      const img = new Image();
+
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Teken originele afbeelding
+        ctx.drawImage(img, 0, 0);
+
+        // Verhoog contrast en helderheid
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          // Verhoog contrast (factor 1.2) en helderheid (+10)
+          data[i] = Math.min(
+            255,
+            Math.max(0, (data[i] - 128) * 1.2 + 128 + 10)
+          ); // R
+          data[i + 1] = Math.min(
+            255,
+            Math.max(0, (data[i + 1] - 128) * 1.2 + 128 + 10)
+          ); // G
+          data[i + 2] = Math.min(
+            255,
+            Math.max(0, (data[i + 2] - 128) * 1.2 + 128 + 10)
+          ); // B
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        resolve(canvas.toDataURL());
+      };
+
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -52,18 +94,25 @@ export default function Picture() {
     setProcessingProgress(0);
 
     try {
-      // Tesseract.js OCR processing met Nederlandse en Engelse taalondersteuning
+      // Voorbewerking van de afbeelding
+      const preprocessedImage = await preprocessImage(selectedImage);
+
+      // Tesseract.js OCR processing met verbeterde instellingen
       const result = await Tesseract.recognize(
-        selectedImage,
+        preprocessedImage,
         "nld+eng", // Nederlandse en Engelse taalherkenning
         {
           logger: (m) => {
             console.log(m);
-            // Update progress bar
             if (m.status === "recognizing text") {
               setProcessingProgress(Math.round(m.progress * 100));
             }
           },
+          // Verbeterde OCR instellingen
+          tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+          tessedit_char_whitelist:
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789àáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž -_|/\\()[]{}.,;:!?'\"",
+          preserve_interword_spaces: "1",
         }
       );
 
@@ -85,13 +134,22 @@ export default function Picture() {
   };
 
   const parseQuestionsFromText = (text: string): QuestionAnswer[] => {
-    const lines = text.split("\n").filter((line) => line.trim().length > 0);
+    const lines = text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
     const questions: QuestionAnswer[] = [];
 
     console.log("Parsing text:", text);
     console.log("Lines:", lines);
 
-    // Detecteer het format van de tekst
+    // Eerst proberen we tabel-formaat te detecteren (zoals in je voorbeelden)
+    const tableFormat = detectTableFormat(lines);
+    if (tableFormat.length > 0) {
+      return tableFormat;
+    }
+
+    // Detecteer verschillende formaten
     const hasVraagAntwoord =
       text.toLowerCase().includes("vraag") &&
       text.toLowerCase().includes("antwoord");
@@ -101,8 +159,13 @@ export default function Picture() {
 
     // Verbeterde detectie voor twee-kolommen format
     const hasTwoColumns = lines.some((line) => {
-      // Probeer verschillende scheidingstekens
-      const separators = [/\s{3,}/, /\t+/, /\s*-\s*/, /\s*:\s*/];
+      const separators = [
+        /\s{2,}/,
+        /\t+/,
+        /\s*[-–—]\s*/,
+        /\s*[:|]\s*/,
+        /\s*[/\\]\s*/,
+      ];
       return separators.some((sep) => {
         const parts = line.split(sep).filter((part) => part.trim().length > 0);
         return (
@@ -125,9 +188,15 @@ export default function Picture() {
         const trimmedLine = line.trim();
         if (trimmedLine.length === 0) continue;
 
-        // Probeer verschillende scheidingstekens
+        // Probeer verschillende scheidingstekens in volgorde van waarschijnlijkheid
         let parts: string[] = [];
-        const separators = [/\s{3,}/, /\t+/, /\s*-\s*/, /\s*:\s*/];
+        const separators = [
+          /\s{3,}/,
+          /\t+/,
+          /\s*[-–—]\s*/,
+          /\s*[:|]\s*/,
+          /\s*[/\\]\s*/,
+        ];
 
         for (const separator of separators) {
           parts = trimmedLine
@@ -150,10 +219,9 @@ export default function Picture() {
 
       for (const line of lines) {
         const trimmedLine = line.trim();
-        if (
-          trimmedLine.toLowerCase().includes("vraag") ||
-          trimmedLine.includes("?")
-        ) {
+        const lowerLine = trimmedLine.toLowerCase();
+
+        if (lowerLine.includes("vraag") || trimmedLine.includes("?")) {
           if (currentQuestion && currentAnswer) {
             questions.push({
               question: currentQuestion,
@@ -163,7 +231,7 @@ export default function Picture() {
           currentQuestion = trimmedLine.replace(/vraag\s*\d*:?\s*/i, "").trim();
           currentAnswer = "";
         } else if (
-          trimmedLine.toLowerCase().includes("antwoord") ||
+          lowerLine.includes("antwoord") ||
           (currentQuestion && !currentAnswer)
         ) {
           currentAnswer = trimmedLine
@@ -180,7 +248,6 @@ export default function Picture() {
         }
       }
 
-      // Voeg laatste paar toe als het nog niet is toegevoegd
       if (currentQuestion && currentAnswer) {
         questions.push({ question: currentQuestion, answer: currentAnswer });
       }
@@ -198,24 +265,79 @@ export default function Picture() {
         }
       }
     } else {
-      // Fallback: probeer elke regel als vraag-antwoord paar te interpreteren
-      // of als alternerende vraag-antwoord regels
+      // Fallback: alternerende regels of intelligente scheiding
       for (let i = 0; i < lines.length - 1; i += 2) {
         const question = lines[i].trim();
         const answer = lines[i + 1]?.trim() || "";
-        if (question && answer) {
+        if (question && answer && question !== answer) {
           questions.push({ question, answer });
         }
       }
     }
 
     console.log("Parsed questions:", questions);
+    return questions.filter((q) => q.question && q.answer); // Filter lege entries
+  };
+
+  // Nieuwe functie om tabel-formaat te detecteren
+  const detectTableFormat = (lines: string[]): QuestionAnswer[] => {
+    const questions: QuestionAnswer[] = [];
+
+    // Zoek naar tabel-structuur zoals in je voorbeelden
+    const leftColumn: string[] = [];
+    const rightColumn: string[] = [];
+
+    for (const line of lines) {
+      // Skip horizontale lijnen
+      if (line.match(/^[-_|=\s]+$/)) continue;
+
+      // Probeer verticale scheiding te vinden
+      const verticalSeparators = ["|", "│", "┃", "╎", "╏"];
+      let foundSeparator = false;
+
+      for (const sep of verticalSeparators) {
+        if (line.includes(sep)) {
+          const parts = line
+            .split(sep)
+            .map((p) => p.trim())
+            .filter((p) => p.length > 0);
+          if (parts.length >= 2) {
+            leftColumn.push(parts[0]);
+            rightColumn.push(parts[1]);
+            foundSeparator = true;
+            break;
+          }
+        }
+      }
+
+      // Als geen verticale separator, probeer spatie-gebaseerde scheiding
+      if (!foundSeparator) {
+        const parts = line.split(/\s{3,}/).filter((p) => p.trim().length > 0);
+        if (parts.length >= 2) {
+          leftColumn.push(parts[0].trim());
+          rightColumn.push(parts[1].trim());
+        }
+      }
+    }
+
+    // Combineer kolommen tot vraag-antwoord paren
+    const maxLength = Math.min(leftColumn.length, rightColumn.length);
+    for (let i = 0; i < maxLength; i++) {
+      if (leftColumn[i] && rightColumn[i]) {
+        questions.push({
+          question: leftColumn[i],
+          answer: rightColumn[i],
+        });
+      }
+    }
+
     return questions;
   };
 
   const handleEdit = () => {
     navigate("/upload/manual", { state: { parsedQuestions } });
   };
+
   const handleStartTest = () => {
     navigate("/toets", { state: { parsedQuestions } });
   };
@@ -247,7 +369,8 @@ export default function Picture() {
             style={{ fontFamily: "Roboto Mono, monospace" }}
           >
             Maak een foto of upload een afbeelding met vraag-antwoord paren,
-            woordenlijsten of aantekeningen
+            woordenlijsten of aantekeningen. Zorg voor goede belichting en
+            scherpe tekst.
           </p>
         </div>
 
@@ -263,6 +386,20 @@ export default function Picture() {
                   <p className="text-gray-500 mb-6">
                     Kies een foto van je werkblad, woordenlijst of aantekeningen
                   </p>
+
+                  {/* Tips voor betere OCR */}
+                  <div className="bg-blue-50 rounded-lg p-4 mb-6 text-left">
+                    <h4 className="font-semibold text-blue-800 mb-2">
+                      Tips voor beste resultaten:
+                    </h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Zorg voor goede belichting zonder schaduwen</li>
+                      <li>• Houd de camera recht boven het papier</li>
+                      <li>• Tekst moet scherp en duidelijk leesbaar zijn</li>
+                      <li>• Gebruik een donkere pen op wit papier</li>
+                      <li>• Vermijd reflecties van licht</li>
+                    </ul>
+                  </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
@@ -317,7 +454,7 @@ export default function Picture() {
 
                     <button
                       onClick={resetUpload}
-                      className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                      className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-4 px-8 rounded-lg transition-colors duration-200"
                     >
                       Andere foto
                     </button>
@@ -343,16 +480,23 @@ export default function Picture() {
                 className="text-xl font-semibold text-gray-800 mb-4"
                 style={{ fontFamily: "Roboto Condensed, sans-serif" }}
               >
-                Herkende vragen en antwoorden
+                Herkende vragen en antwoorden ({parsedQuestions.length} paren)
               </h3>
 
-              {/* Debug info */}
-              <div className="mb-4 p-3 bg-gray-100 rounded text-sm">
-                <strong>OCR Tekst:</strong>
-                <pre className="mt-2 whitespace-pre-wrap text-xs">
-                  {ocrText}
-                </pre>
-              </div>
+              {/* Debug info - alleen tonen in development */}
+              {process.env.NODE_ENV === "development" && (
+                <details className="mb-4">
+                  <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+                    Debug informatie (klik om te tonen)
+                  </summary>
+                  <div className="mt-2 p-3 bg-gray-100 rounded text-sm">
+                    <strong>OCR Tekst:</strong>
+                    <pre className="mt-2 whitespace-pre-wrap text-xs max-h-40 overflow-y-auto">
+                      {ocrText}
+                    </pre>
+                  </div>
+                </details>
+              )}
 
               {parsedQuestions.length > 0 ? (
                 <div className="space-y-4">
@@ -371,10 +515,17 @@ export default function Picture() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">
-                  Geen vragen gevonden. Probeer een andere afbeelding of bewerk
-                  handmatig.
-                </p>
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    Geen vragen gevonden. Dit kan komen door:
+                  </p>
+                  <ul className="text-sm text-gray-600 text-left max-w-md mx-auto space-y-2">
+                    <li>• Onduidelijke of te kleine tekst</li>
+                    <li>• Slechte belichting of schaduwen</li>
+                    <li>• Handschrift dat moeilijk te herkennen is</li>
+                    <li>• Ongewoon formaat van de vragen</li>
+                  </ul>
+                </div>
               )}
             </div>
 
