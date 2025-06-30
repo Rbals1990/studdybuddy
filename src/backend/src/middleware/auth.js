@@ -1,78 +1,98 @@
 // backend/src/middleware/auth.js
-import { supabase } from "../config/database.js";
+import jwt from "jsonwebtoken";
+import { supabaseAdmin } from "../config/database.js";
 
 // Middleware om JWT token te verifiëren
 export const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
 
-    if (!token) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        error: "Access token required",
+        success: false,
+        message: "Geen geldig authenticatie token gevonden",
       });
     }
 
-    // Verifieer token met Supabase
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser(token);
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
-    if (error || !user) {
-      return res.status(403).json({
-        error: "Invalid or expired token",
-      });
-    }
+    // Verify JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Voeg user info toe aan request object
-    req.user = user;
-    req.userId = user.id;
-
-    next();
-  } catch (error) {
-    console.error("Auth middleware error:", error);
-    res.status(500).json({
-      error: "Internal server error",
-    });
-  }
-};
-
-// Middleware om te checken of user profile bestaat
-export const ensureUserProfile = async (req, res, next) => {
-  try {
-    const { data: profile, error } = await supabase
+    // Check if user still exists in database
+    const { data: user, error } = await supabaseAdmin
       .from("user_profiles")
-      .select("*")
-      .eq("id", req.userId)
+      .select("id, first_name, email")
+      .eq("id", decoded.userId)
       .single();
 
-    if (error && error.code !== "PGRST116") {
-      // PGRST116 = no rows returned
-      throw error;
-    }
-
-    if (!profile) {
-      return res.status(404).json({
-        error: "User profile not found. Please complete registration.",
+    if (error || !user) {
+      return res.status(401).json({
+        success: false,
+        message: "Gebruiker niet gevonden",
       });
     }
 
-    req.userProfile = profile;
+    // Add user info to request object
+    req.user = {
+      id: user.id,
+      firstName: user.first_name,
+      email: user.email,
+    };
+
     next();
   } catch (error) {
-    console.error("User profile check error:", error);
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Ongeldig authenticatie token",
+      });
+    }
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Authenticatie token is verlopen",
+      });
+    }
+
+    console.error("Auth middleware error:", error);
     res.status(500).json({
-      error: "Failed to verify user profile",
+      success: false,
+      message: "Er ging iets mis bij het verifiëren van de authenticatie",
     });
   }
 };
 
-// Optional middleware: alleen voor development/debugging
-export const logRequest = (req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  if (req.user) {
-    console.log(`User: ${req.user.email} (${req.userId})`);
+// Optional middleware - niet vereist maar voegt user info toe als token aanwezig is
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next(); // Continue zonder user info
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const { data: user, error } = await supabaseAdmin
+      .from("user_profiles")
+      .select("id, first_name, email")
+      .eq("id", decoded.userId)
+      .single();
+
+    if (!error && user) {
+      req.user = {
+        id: user.id,
+        firstName: user.first_name,
+        email: user.email,
+      };
+    }
+
+    next();
+  } catch (error) {
+    // In optional auth, we don't return errors, just continue
+    next();
   }
-  next();
 };

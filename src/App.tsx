@@ -1,7 +1,108 @@
 import "./App.css";
+import {
+  createBrowserRouter,
+  Route,
+  createRoutesFromElements,
+} from "react-router-dom";
+import { RouterProvider } from "react-router/dom";
+
+//components
+import Manual from "./components/uploadComponents/Manual";
+import PickFromDb from "./components/uploadComponents/PickFromDb";
+import Picture from "./components/uploadComponents/Picture";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+
+import Contact from "./components/Contact";
+import Home from "./components/Home";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import Test from "./components/Test";
+import Timer from "./components/Timer";
+import NotFound from "./components/NotFound";
+import { TimerProvider } from "./components/TimerProvider";
+
+//layouts
+import BasicLayout from "./layouts/BasicLayout";
+
+//router
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <>
+      {/*Homepagina zonder Layout*/}
+      <Route
+        index
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+      {/*Routes met BasicLayout*/}
+      <Route path="/" element={<BasicLayout />}>
+        {/*all acces Routes*/}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="*" element={<NotFound />} />
+        {/*Protected Routes */}
+        <Route
+          path="/contact"
+          element={
+            <ProtectedRoute>
+              <Contact />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/upload/manual"
+          element={
+            <ProtectedRoute>
+              <Manual />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/upload/pick-from-db"
+          element={
+            <ProtectedRoute>
+              <PickFromDb />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/upload/picture"
+          element={
+            <ProtectedRoute>
+              <Picture />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timer"
+          element={
+            <ProtectedRoute>
+              <Timer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/toets"
+          element={
+            <ProtectedRoute>
+              <Test />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
+    </>
+  )
+);
 
 function App() {
-  return <h1>Hello World!</h1>;
+  return (
+    <TimerProvider>
+      <RouterProvider router={router} />;
+    </TimerProvider>
+  );
 }
 
 export default App;
