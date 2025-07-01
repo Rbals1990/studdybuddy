@@ -138,145 +138,119 @@ export default function Picture() {
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
+
+    console.log("Original text:", text);
+    console.log("Lines after splitting:", lines);
+
     const questions: QuestionAnswer[] = [];
 
-    console.log("Parsing text:", text);
-    console.log("Lines:", lines);
+    // Probeer elke regel als één vraag-antwoord paar te interpreteren
+    for (const line of lines) {
+      // Skip decoratieve lijnen of te korte regels
+      if (/^[-_|=\s]*$/.test(line) || line.length < 3) continue;
 
-    // Eerst proberen we tabel-formaat te detecteren (zoals in je voorbeelden)
-    const tableFormat = detectTableFormat(lines);
-    if (tableFormat.length > 0) {
-      return tableFormat;
-    }
+      // Split de regel op verschillende scheidingstekens
+      let parts: string[] = [];
 
-    // Detecteer verschillende formaten
-    const hasVraagAntwoord =
-      text.toLowerCase().includes("vraag") &&
-      text.toLowerCase().includes("antwoord");
-    const hasNumberedQuestions = /^\d+\./.test(
-      lines.find((line) => line.trim()) || ""
-    );
-
-    // Verbeterde detectie voor twee-kolommen format
-    const hasTwoColumns = lines.some((line) => {
+      // Probeer verschillende separators in volgorde van waarschijnlijkheid
       const separators = [
-        /\s{2,}/,
-        /\t+/,
-        /\s*[-–—]\s*/,
-        /\s*[:|]\s*/,
-        /\s*[/\\]\s*/,
+        /\s{4,}/, // 4 of meer spaties (meest waarschijnlijk voor kolommen)
+        /\t+/, // tabs
+        /\s{3}/, // 3 spaties
+        /\s{2}/, // 2 spaties (voorzichtig, kan binnen woorden voorkomen)
       ];
-      return separators.some((sep) => {
-        const parts = line.split(sep).filter((part) => part.trim().length > 0);
-        return (
-          parts.length >= 2 &&
-          parts[0].trim().length > 0 &&
-          parts[1].trim().length > 0
-        );
-      });
-    });
 
-    console.log("Format detection:", {
-      hasVraagAntwoord,
-      hasNumberedQuestions,
-      hasTwoColumns,
-    });
-
-    if (hasTwoColumns) {
-      // Format: woord1    woord2 (zoals Nederlands-Engels)
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (trimmedLine.length === 0) continue;
-
-        // Probeer verschillende scheidingstekens in volgorde van waarschijnlijkheid
-        let parts: string[] = [];
-        const separators = [
-          /\s{3,}/,
-          /\t+/,
-          /\s*[-–—]\s*/,
-          /\s*[:|]\s*/,
-          /\s*[/\\]\s*/,
-        ];
-
-        for (const separator of separators) {
-          parts = trimmedLine
-            .split(separator)
-            .filter((part) => part.trim().length > 0);
-          if (parts.length >= 2) break;
-        }
-
-        if (parts.length >= 2) {
-          questions.push({
-            question: parts[0].trim(),
-            answer: parts.slice(1).join(" ").trim(),
-          });
+      for (const separator of separators) {
+        const testParts = line
+          .split(separator)
+          .filter((part) => part.trim().length > 0);
+        if (testParts.length === 2) {
+          parts = testParts;
+          break;
         }
       }
-    } else if (hasVraagAntwoord) {
-      // Format: Vraag X: ... Antwoord X: ...
-      let currentQuestion = "";
-      let currentAnswer = "";
 
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-        const lowerLine = trimmedLine.toLowerCase();
+      // Als geen duidelijke scheiding gevonden, probeer op basis van woordtelling
+      if (parts.length !== 2) {
+        const words = line.split(/\s+/).filter((word) => word.length > 0);
 
-        if (lowerLine.includes("vraag") || trimmedLine.includes("?")) {
-          if (currentQuestion && currentAnswer) {
-            questions.push({
-              question: currentQuestion,
-              answer: currentAnswer,
-            });
+        if (words.length === 2) {
+          // Precies 2 woorden - perfect
+          parts = words;
+        } else if (words.length > 2) {
+          // Meer dan 2 woorden - probeer te bepalen waar de scheiding is
+          // Heuristiek: zoek naar de meest logische verdeling
+
+          // Methode 1: Verdeel ongeveer in het midden
+          const midPoint = Math.floor(words.length / 2);
+          const leftPart = words.slice(0, midPoint).join(" ");
+          const rightPart = words.slice(midPoint).join(" ");
+
+          // Controleer of deze verdeling logisch is (beide delen hebben redelijke lengte)
+          if (leftPart.length >= 2 && rightPart.length >= 2) {
+            parts = [leftPart, rightPart];
           }
-          currentQuestion = trimmedLine.replace(/vraag\s*\d*:?\s*/i, "").trim();
-          currentAnswer = "";
-        } else if (
-          lowerLine.includes("antwoord") ||
-          (currentQuestion && !currentAnswer)
+
+          // Methode 2: Als methode 1 niet werkt, probeer andere verdelingen
+          if (parts.length !== 2) {
+            // Probeer 1 woord links, rest rechts
+            if (words[0].length >= 2) {
+              const leftWord = words[0];
+              const rightWords = words.slice(1).join(" ");
+              if (rightWords.length >= 2) {
+                parts = [leftWord, rightWords];
+              }
+            }
+          }
+        }
+      }
+
+      // Valideer en voeg toe
+      if (parts.length === 2) {
+        const question = parts[0].trim();
+        const answer = parts[1].trim();
+
+        // Extra validatie
+        if (
+          question.length >= 2 &&
+          answer.length >= 2 &&
+          question !== answer &&
+          // Vermijd duplicate content (soms leest OCR hetzelfde woord dubbel)
+          !question.toLowerCase().includes(answer.toLowerCase()) &&
+          !answer.toLowerCase().includes(question.toLowerCase())
         ) {
-          currentAnswer = trimmedLine
-            .replace(/antwoord\s*\d*:?\s*/i, "")
-            .trim();
-          if (currentQuestion && currentAnswer) {
-            questions.push({
-              question: currentQuestion,
-              answer: currentAnswer,
-            });
-            currentQuestion = "";
-            currentAnswer = "";
-          }
-        }
-      }
-
-      if (currentQuestion && currentAnswer) {
-        questions.push({ question: currentQuestion, answer: currentAnswer });
-      }
-    } else if (hasNumberedQuestions) {
-      // Format: 1. Vraag ... Antwoord op volgende regel
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (/^\d+\./.test(line)) {
-          const question = line.replace(/^\d+\.\s*/, "").trim();
-          const answer = i + 1 < lines.length ? lines[i + 1].trim() : "";
-          if (question && answer && !answer.match(/^\d+\./)) {
-            questions.push({ question, answer });
-            i++; // Skip next line as it's the answer
-          }
-        }
-      }
-    } else {
-      // Fallback: alternerende regels of intelligente scheiding
-      for (let i = 0; i < lines.length - 1; i += 2) {
-        const question = lines[i].trim();
-        const answer = lines[i + 1]?.trim() || "";
-        if (question && answer && question !== answer) {
           questions.push({ question, answer });
         }
       }
     }
 
     console.log("Parsed questions:", questions);
-    return questions.filter((q) => q.question && q.answer); // Filter lege entries
+    return questions;
+  };
+
+  // Extra functie om specifiek voor kolom-layout te optimaliseren
+  const parseColumnBasedText = (text: string): QuestionAnswer[] => {
+    // Alternatieve benadering specifiek voor kolommen
+    const words = text.split(/\s+/).filter((word) => word.length > 1);
+    const questions: QuestionAnswer[] = [];
+
+    // Probeer paren te vormen door woorden te koppelen
+    for (let i = 0; i < words.length - 1; i += 2) {
+      const question = words[i];
+      const answer = words[i + 1];
+
+      if (question && answer && question !== answer) {
+        // Eenvoudige validatie: beide woorden moeten letters bevatten
+        if (/[a-zA-Z]/.test(question) && /[a-zA-Z]/.test(answer)) {
+          questions.push({
+            question: question.trim(),
+            answer: answer.trim(),
+          });
+        }
+      }
+    }
+
+    return questions;
   };
 
   // Nieuwe functie om tabel-formaat te detecteren
@@ -335,11 +309,19 @@ export default function Picture() {
   };
 
   const handleEdit = () => {
-    navigate("/upload/manual", { state: { parsedQuestions } });
+    navigate("/upload/manual", {
+      state: {
+        pairs: parsedQuestions,
+      },
+    });
   };
 
   const handleStartTest = () => {
-    navigate("/toets", { state: { parsedQuestions } });
+    navigate("/toets", {
+      state: {
+        pairs: parsedQuestions,
+      },
+    });
   };
 
   const resetUpload = () => {
@@ -480,7 +462,13 @@ export default function Picture() {
                 className="text-xl font-semibold text-gray-800 mb-4"
                 style={{ fontFamily: "Roboto Condensed, sans-serif" }}
               >
-                Herkende vragen en antwoorden ({parsedQuestions.length} paren)
+                Herkende vragen en antwoorden ({parsedQuestions.length} paren).
+              </h3>
+              <h3
+                className="text-l font-light text-red-400 mb-4"
+                style={{ fontFamily: "Roboto Condensed, sans-serif" }}
+              >
+                Let op! Controleer de paren goed en bewerk indien nodig!
               </h3>
 
               {/* Debug info - alleen tonen in development */}

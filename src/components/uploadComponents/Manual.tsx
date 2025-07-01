@@ -41,15 +41,17 @@ export default function Manual() {
     console.log("Received state in Manual:", state);
 
     if (state?.editMode && state?.setId && state?.setName && state?.pairs) {
-      console.log("Edit mode data:", {
-        setId: state.setId,
-        setName: state.setName,
-        pairs: state.pairs,
-      });
-
+      // EDIT MODE
       setIsEditMode(true);
       setEditingSetId(state.setId);
       setSetName(state.setName);
+      setPairs(
+        state.pairs.length > 0 ? state.pairs : [{ question: "", answer: "" }]
+      );
+    } else if (state?.pairs) {
+      // NIEUWE SET, GEKOMEN VANUIT Picture.tsx
+      console.log("Received new pairs from Picture.tsx:", state.pairs);
+      setIsEditMode(false);
       setPairs(
         state.pairs.length > 0 ? state.pairs : [{ question: "", answer: "" }]
       );
