@@ -10,6 +10,7 @@ import { testConnection } from "./config/database.js";
 import authRoutes from "./routes/auth.js";
 import questionRoutes from "./routes/questions.js";
 import uploadRoutes from "./routes/upload.js";
+import contactRoutes from "./routes/contact.js";
 
 // Load environment variables
 dotenv.config();
@@ -76,6 +77,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/contact", contactRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {

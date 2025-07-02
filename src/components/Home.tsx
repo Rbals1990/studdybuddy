@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, X, Upload, Edit, Database, Clock } from "lucide-react";
+import { Menu, X, Upload, Edit, Database, Clock, Mail } from "lucide-react";
 import { authUtils } from "../config/api/auth";
 import { authAPI } from "../config/api/api";
 
@@ -225,6 +225,14 @@ export default function StuddyBuddyHomepage() {
           >
             <Clock className="w-6 h-6" />
             <span className="text-lg">Stel je timer in!</span>
+          </button>
+          {/* Contact button */}
+          <button
+            onClick={() => handleNavigation("/contact")}
+            className="mt-4 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center mx-auto space-x-2"
+          >
+            <Mail className="w-6 h-6" />
+            <span className="text-lg">Neem contact op!</span>
           </button>
         </div>
       </main>

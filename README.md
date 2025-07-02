@@ -1,137 +1,105 @@
-# StuddyBuddy
+# 📚 StuddyBuddy
 
-Een simpele, volledig responsieve webapp voor scholieren om hun taalvaardigheid op een effectieve manier te oefenen met ingebouwde tijdslimiet functionaliteit voor een gezonde balans tussen leren en ontspannen.
-✨ Features
+**StuddyBuddy** is een volledig responsive webapp voor scholieren om hun taalvaardigheid op een makkelijke, doeltreffende én leuke manier te oefenen. De app biedt een interactieve omgeving waarin leerlingen zelf woordenlijsten kunnen invoeren of uploaden, toetsen kunnen maken met directe feedback, en een studietimer kunnen gebruiken voor een gebalanceerde leerervaring.
 
-Flexibele woordinvoer: Voer handmatig woorden in, upload een foto van je aantekeningen (coming soon!), of kies uit eerder opgeslagen sets
-(coming soon!)
-Intelligente foto-herkenning: Upload een A4-foto en de app extraheert automatisch vragen en antwoorden
-Studietimer: Stel timers in van 10, 20 of 30 minuten met verplichte pauzes
-Real-time feedback: Kleurgecodeerde voortgangsindicator (groen >90%, oranje 50-90%, rood <50%)
-Adaptive learning: Vragen worden gehusseld voor optimale memorisatie
-Persoonlijke database: Sla woordensets op voor herhaald gebruik
-Responsive design: Werkt perfect op desktop, tablet en mobiel
+---
 
-🎯 Doelgroep
-Scholieren die hun taalvaardigheid willen verbeteren door middel van vraag-antwoord oefeningen.
+## 🎯 Doel
 
-🛠️ Tech Stack
-Frontend
+Een toegankelijke, gebruiksvriendelijke tool waarmee leerlingen effectief hun woordenschat kunnen trainen in o.a. Nederlands en Engels. Door een tijdslimiet in te stellen en via het stoplichtprincipe feedback te krijgen, blijft leren behapbaar en motiverend.
 
-TypeScript - Type-safe JavaScript
-React + Vite - Moderne React development
-HTML/CSS - Structuur en styling
-Tailwind CSS - Utility-first CSS framework
-Netlify - Frontend hosting
+---
 
-Backend
+## 🚀 Functionaliteiten
 
-JavaScript - Server-side logic
-Node.js - Runtime environment
-Express.js - Web application framework
-Database - Supabase
-Render - Backend hosting
+- Oefenen van eigen woordenlijsten
+- Uploaden van foto's met woorden (OCR extractie)
+- Studietimer (10, 20 of 30 min) met pauzemelding
+- Feedback per antwoord (groen/oranje/rood)
+- Opslaan van woordenparen in persoonlijke database
+- Oefeningen worden omgedraaid na afloop voor verdieping
+- Score-overzicht en eindcijfer
+- Herhalen of afsluiten na elke oefening
 
-🎨 Design System
-Kleurenpalet
+---
 
-Primair: #E077D7 - Hoofdkleur
-Secundair: #28AFB0 - Accentkleur
-Tertiair: #55C1FF - Ondersteunende kleur
-Buttons: #E1DD8F - Knopkleur
-Sidebar: #6622CC - Navigatiekleur
+## 🖼️ Layout & Navigatie
 
-Typografie
+### ✅ **BasicLayout** (Login, Register, Contact, Upload, Toets)
 
-H1: Lexend Deca - Hoofdkoppen
-H2: Roboto Condensed - Subkoppen
-Paragrafen: Roboto Mono - Algemene tekst
-Antwoorden: Caveat - Speciaal voor goed/fout feedback
+- Logo gecentreerd bovenin
+- Volledige scherminhoud van component
 
-📁 Project Structuur
-studdybuddy/
-├── src/
-│ ├── frontend/
-│ │ └── componenten/
-│ │ ├── Home
-│ │ ├── Register
-│ │ ├── Login
-│ │ ├── Timer
-│ │ ├── Contact
-│ │ ├── Upload info/
-│ │ │ ├── handmatig
-│ │ │ ├── uploadFoto
-│ │ │ └── kiesUitDatabase
-│ │ └── Toets
-│ └── backend/
-│ ├── database/
-│ └── api/
+### 🏠 **HomeLayout** (Homepagina)
 
-🚀 Componenten Overzicht
-Authenticatie
+- **Mobile**: Hamburger menu, kaarten onder elkaar
+- **Desktop**: Hamburger menu, 3 kaarten horizontaal gecentreerd
+- Opties: Handmatig toevoegen, Foto uploaden, Database kiezen
 
-Login: Beveiligde toegang met email/wachtwoord
-Register: Accountregistratie met wachtwoordvalidatie (min. 10 tekens, hoofdletter, speciaal teken, cijfer)
+---
 
-Hoofdfunctionaliteit
+## 🧩 Componenten
 
-Home: Dashboard met toegang tot alle functies
-Timer: Studietimer met verplichte pauzes voor gezond leren
-Toets: Interactieve oefenmodus met real-time feedback
+- **Login & Register**: Validatie van sterke wachtwoorden, gebruikersbeheer met unieke UserID
+- **Homepagina**: Kiezen uit manieren om woorden toe te voegen + toegang tot timer
+- **Timer**: Aftellende timer met pauzemelding en klikvertraging
+- **Contactformulier**: Verstuurbare feedback tot 300 woorden
+- **Handmatig**: Zelf vragen/antwoorden invoeren & opslaan
+- **UploadFoto**: OCR op foto → automatische invoer
+- **KiesDatabase**: Persoonlijke lijst met opgeslagen paren, scores & bewerkopties
+- **Toets**: Vraag/antwoord met kleurscores + omgedraaide toetsronde
 
-Data Management
+---
 
-Handmatig: Directe invoer van vraag-antwoord paren
-Upload Foto: AI-powered tekstherkenning van handgeschreven notities
-Database Keuze: Toegang tot persoonlijke woordensets
+## 🛠️ Technische Stack
 
-🎮 Hoe het Werkt
+### 💻 Frontend
 
-Inloggen/Registreren: Maak een account aan of log in
-Woorden Toevoegen:
+- React (+ Vite)
+- TypeScript
+- HTML, Tailwind CSS
+- Hosting: Netlify
 
-Typ handmatig in
-Upload een foto van je aantekeningen
-Kies uit eerder opgeslagen sets
+### 🌐 Backend
 
-Timer Instellen: Kies 10, 20 of 30 minuten studietijd
-Oefenen: Beantwoord vragen met real-time kleurgecodeerde feedback
-Resultaten: Bekijk je score en foute antwoorden
-Herhalen: Start opnieuw met gehusselde vragen
+- Node.js, Express.js
+- Supabase
+- Hosting: Render
 
-📱 Responsive Design
-Mobile Layout
+---
 
-Hamburger menu met navigatie
-Gestapelde kaarten voor overzichtelijkheid
-Touch-friendly interface
+## 🎨 Design
 
-Desktop Layout
+### Kleurenpalet
 
-Horizontaal verdeelde content
-Uitgebreide navigatie
-Optimaal gebruik van schermruimte
+| Element   | Kleur     |
+| --------- | --------- |
+| Primair   | `#E077D`  |
+| Secundair | `#28AFB0` |
+| Tertiair  | `#55C1FF` |
+| Buttons   | `#E1DD8F` |
+| Sidebar   | `#6622CC` |
 
-🔒 Beveiliging & Privacy
+### Fonts
 
-Gebruikers kunnen alleen hun eigen woordensets bekijken en beheren
-Veilige wachtwoordvalidatie
-Persoonlijke data wordt gekoppeld aan unieke UserID
+- **H1**: Lexend Deca
+- **H2**: Roboto Condensed
+- **Paragrafen**: Roboto Mono
+- **Feedbacktekst**: Caveat
 
-📞 Contact & Support
-Ingebouwde contactformulier voor gebruikersfeedback en ondersteuning (max. 300 woorden).
-🔄 Komende Features
+---
 
-Database implementatie (nog te bepalen welke)
-Uitgebreide analytics voor leervoortgang
-Meer taalondersteuning
-Sociale features voor het delen van woordensets
+## 📦 Features to add (Toekomstige verbeteringen)
 
-💡 Design Principes
+- Meertalige ondersteuning uitbreiden
+- Uitbreiding timeropties
+- Analytics per gebruiker (voortgang)
+- OCR optimaliseren voor verschillende formaten
 
-Simpliciteit: Intuïtieve interface zonder onnodige complexiteit
-Effectiviteit: Bewezen leermethoden geïmplementeerd in digitale vorm
-Balans: Ingebouwde pauzes voor gezond leergedrag
-Personalisatie: Aanpasbare content en voortgangstracering
+---
 
-StuddyBuddy - Maak leren leuk en effectief! 📚✨
+## 🤝 Contact
+
+Voor vragen of suggesties, gebruik het contactformulier binnen de app of stuur een e-mail via de appinterface.
+
+---
