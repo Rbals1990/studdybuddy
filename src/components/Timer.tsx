@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Play, Pause, RotateCcw } from "lucide-react";
+import { Clock, Play, Pause, RotateCcw, Volume2, VolumeX } from "lucide-react";
 
 export default function StuddyBuddyTimer() {
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
@@ -10,6 +10,63 @@ export default function StuddyBuddyTimer() {
   const [breakStartTime, setBreakStartTime] = useState<number | null>(null);
   const [canContinue, setCanContinue] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ x: 50, y: 50 });
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Create audio context and sound
+  const createNotificationSound = () => {
+    if (!soundEnabled) return;
+
+    try {
+      // Create audio context
+      const audioContext = new (window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext)();
+
+      // Create a pleasant notification sound (ascending bell-like tone)
+      const createTone = (
+        frequency: number,
+        duration: number,
+        startTime: number
+      ) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.setValueAtTime(
+          frequency,
+          audioContext.currentTime + startTime
+        );
+        oscillator.type = "sine";
+
+        // Create a pleasant envelope
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime + startTime);
+        gainNode.gain.linearRampToValueAtTime(
+          0.3,
+          audioContext.currentTime + startTime + 0.1
+        );
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + startTime + duration
+        );
+
+        oscillator.start(audioContext.currentTime + startTime);
+        oscillator.stop(audioContext.currentTime + startTime + duration);
+      };
+
+      for (let i = 0; i < 3; i++) {
+        const baseDelay = i * 1.8; // 1.8 seconds between each complete chime
+
+        // Play a pleasant 3-tone chime
+        createTone(523.25, 0.5, baseDelay + 0); // C5
+        createTone(659.25, 0.5, baseDelay + 0.2); // E5
+        createTone(783.99, 0.8, baseDelay + 0.4); // G5
+      }
+    } catch (error) {
+      console.log("Audio niet ondersteund:", error);
+    }
+  };
 
   // Function to bring tab to focus and show notification
   const alertUser = () => {
@@ -18,6 +75,9 @@ export default function StuddyBuddyTimer() {
 
     // Change the document title to attract attention
     document.title = "⏰ PAUZE TIJD! - StuddyBuddy Timer";
+
+    // Play notification sound
+    createNotificationSound();
 
     // Optional: Show browser notification (requires permission)
     if ("Notification" in window && Notification.permission === "granted") {
@@ -32,6 +92,11 @@ export default function StuddyBuddyTimer() {
     setTimeout(() => {
       document.body.style.backgroundColor = "";
     }, 500);
+  };
+
+  // Test sound function
+  const testSound = () => {
+    createNotificationSound();
   };
 
   // Request notification permission on component mount
@@ -79,7 +144,7 @@ export default function StuddyBuddyTimer() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, isPaused]); // Removed timeLeft from dependencies to prevent restarts
+  }, [isActive, isPaused]);
 
   // Break timer logic
   useEffect(() => {
@@ -179,6 +244,35 @@ export default function StuddyBuddyTimer() {
           </p>
         </div>
       )}
+
+      {/* Sound control */}
+      <div className="absolute top-4 right-4 z-10">
+        <div className="flex items-center space-x-2 bg-white rounded-lg shadow-md p-2">
+          <button
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className={`p-2 rounded-md transition-colors duration-200 ${
+              soundEnabled
+                ? "bg-purple-100 text-purple-600"
+                : "bg-gray-100 text-gray-400"
+            }`}
+            title={soundEnabled ? "Geluid aan" : "Geluid uit"}
+          >
+            {soundEnabled ? (
+              <Volume2 className="w-5 h-5" />
+            ) : (
+              <VolumeX className="w-5 h-5" />
+            )}
+          </button>
+          {soundEnabled && (
+            <button
+              onClick={testSound}
+              className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100 transition-colors"
+            >
+              Test
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

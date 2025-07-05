@@ -14,7 +14,7 @@ Een toegankelijke, gebruiksvriendelijke tool waarmee leerlingen effectief hun wo
 
 - Oefenen van eigen woordenlijsten
 - Uploaden van foto's met woorden (OCR extractie)
-- Studietimer (10, 20 of 30 min) met pauzemelding
+- Studietimer (10, 20 of 30 min) met pauzemelding inclusief geluid
 - Feedback per antwoord (groen/oranje/rood)
 - Opslaan van woordenparen in persoonlijke database
 - Oefeningen worden omgedraaid na afloop voor verdieping
@@ -92,9 +92,10 @@ Een toegankelijke, gebruiksvriendelijke tool waarmee leerlingen effectief hun wo
 ## 📦 Features to add (Toekomstige verbeteringen)
 
 - Meertalige ondersteuning uitbreiden
-- Uitbreiding timeropties
+- Uitbreiding timeropties op verzoek
 - Analytics per gebruiker (voortgang)
 - OCR optimaliseren voor verschillende formaten
+- Wachtwoord reset functie
 
 ---
 

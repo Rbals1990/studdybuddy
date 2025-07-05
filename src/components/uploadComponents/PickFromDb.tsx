@@ -315,11 +315,10 @@ export default function PickFromDb() {
 
                     <div className="flex items-center text-sm text-gray-600 mb-2">
                       <Target className="w-4 h-4 mr-1" />
-                      <span>{set.question_count} vragen</span>
+                      <span>{set.question_count} vraag/vragen</span>
                       {set.last_score !== undefined && (
                         <>
                           <span className="mx-2">•</span>
-                          <span>Laatste score: {set.last_score}%</span>
                         </>
                       )}
                     </div>
