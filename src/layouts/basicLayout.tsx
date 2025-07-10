@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 export default function BasicLayout() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-[#FFFAEF] pb-4 mt-2">
-      <a href="/">
+      <a href="/home">
         <img
           src="/sbmascotte.PNG"
           alt="studdybuddy logo"

@@ -234,7 +234,7 @@ export default function Manual() {
           ? "Vragenset succesvol bijgewerkt!"
           : "Vragenset succesvol opgeslagen!";
         alert(message);
-        navigate("/");
+        navigate("/home");
       }
     } catch (error) {
       console.error("Save failed:", error);
@@ -285,7 +285,7 @@ export default function Manual() {
     if (isEditMode) {
       navigate("/upload/pick-from-db");
     } else {
-      navigate("/");
+      navigate("/home");
     }
   };
 

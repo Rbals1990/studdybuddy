@@ -7,6 +7,7 @@ import {
 import { RouterProvider } from "react-router/dom";
 
 //components
+import StuddyBuddyLanding from "./components/LandingPage";
 import Manual from "./components/uploadComponents/Manual";
 import PickFromDb from "./components/uploadComponents/PickFromDb";
 import Picture from "./components/uploadComponents/Picture";
@@ -28,9 +29,10 @@ import BasicLayout from "./layouts/BasicLayout";
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
+      <Route index element={<StuddyBuddyLanding />} />
       {/*Homepagina zonder Layout*/}
       <Route
-        index
+        path="/home"
         element={
           <ProtectedRoute>
             <Home />

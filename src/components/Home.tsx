@@ -82,7 +82,7 @@ export default function StuddyBuddyHomepage() {
               <ul className="space-y-2">
                 <li>
                   <button
-                    onClick={() => handleNavigation("/")}
+                    onClick={() => handleNavigation("/home")}
                     className="block px-4 py-2 text-white hover:bg-purple-700 rounded"
                   >
                     Home

@@ -233,7 +233,7 @@ export default function PickFromDb() {
         {/* Header */}
         <div className="text-center mb-8">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/home")}
             className="inline-flex items-center text-purple-600 hover:text-purple-800 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

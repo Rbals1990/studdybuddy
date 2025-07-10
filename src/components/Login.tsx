@@ -18,7 +18,7 @@ export default function Login() {
   useEffect(() => {
     // Redirect als al ingelogd
     if (authUtils.isAuthenticated()) {
-      navigate("/");
+      navigate("/home");
       return;
     }
 
@@ -47,7 +47,7 @@ export default function Login() {
         authUtils.setAuthData(data.data.token, data.data.user);
 
         // Redirect naar home
-        navigate("/");
+        navigate("/home");
       } else {
         // Toon error message van backend
         if (data.errors && data.errors.length > 0) {

@@ -10,7 +10,7 @@ export default function Contact() {
   const navigate = useNavigate();
 
   const handleCancel = () => {
-    navigate("/");
+    navigate("/home");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,7 +55,7 @@ export default function Contact() {
 
       // Na 3 seconden terug naar home
       setTimeout(() => {
-        navigate("/");
+        navigate("/home");
       }, 3000);
     } catch (error) {
       console.error("Error sending message:", error);

@@ -30,7 +30,7 @@ export default function Test() {
 
   useEffect(() => {
     if (!incomingPairs || incomingPairs.length === 0) {
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
       return;
     }
 
@@ -169,7 +169,7 @@ export default function Test() {
             Opnieuw oefenen
           </button>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/home")}
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full shadow-md"
           >
             Terug naar home
