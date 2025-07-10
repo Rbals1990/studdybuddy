@@ -18,7 +18,7 @@ router.use(authenticateToken);
 // MULTER CONFIGURATION
 // ========================================
 
-// Ensure uploads directory exists
+// Bevestigen dat de uploads directory bestaat
 const uploadsDir = "uploads/temp";
 try {
   await fs.mkdir(uploadsDir, { recursive: true });
@@ -39,7 +39,7 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter for images only
+// File filter voor afbeeldingen
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|bmp|webp/;
   const extname = allowedTypes.test(
@@ -81,7 +81,7 @@ const ocrValidation = [
 ];
 
 // ========================================
-// HELPER FUNCTIONS
+// HELPER FUNCTIES
 // ========================================
 
 const cleanupTempFile = async (filePath) => {
@@ -129,18 +129,18 @@ const parseQuestionsFromText = (text) => {
     .filter((line) => line.length > 0);
   const questions = [];
 
-  // Try different parsing strategies
+  // Andere methodes proberen
 
-  // Strategy 1: Look for patterns like "word - translation" or "word: translation"
+  // Strategie 1: Zoek naar patronen zoals "woord - vertaling" of "woord: vertaling"
   const separatorRegex = /^(.+?)\s*[-:=→]\s*(.+)$/;
 
-  // Strategy 2: Look for alternating lines (question, answer, question, answer)
+  // Strategie 2: Zoek naar afwisselende lijnen (vraag, antwoord, vraag, antwoord)
   let currentQuestion = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Try separator pattern first
+    // Probeer eerst het scheidingsteken patroon
     const separatorMatch = line.match(separatorRegex);
     if (separatorMatch) {
       const [, question, answer] = separatorMatch;
@@ -153,12 +153,12 @@ const parseQuestionsFromText = (text) => {
       }
     }
 
-    // Try alternating pattern
+    // Probeer alternatieve patroon
     if (currentQuestion === null) {
-      // This line should be a question
+      // Dit is een vraag
       currentQuestion = line;
     } else {
-      // This line should be an answer
+      // Dit is een antwoord
       questions.push({
         question: currentQuestion,
         answer: line,
@@ -167,7 +167,7 @@ const parseQuestionsFromText = (text) => {
     }
   }
 
-  // Filter out very short or very long entries
+  // Erg lange of erg korte vragen/antwoorden filteren
   return questions.filter(
     (q) =>
       q.question.length >= 1 &&
@@ -236,7 +236,7 @@ router.post(
       tempFilePath = req.file.path;
       const { language = "nld" } = req.body;
 
-      // Perform OCR
+      // OCR uitvoeren
       console.log("Starting OCR process...");
       const ocrResult = await performOCR(tempFilePath, language);
 
@@ -249,7 +249,7 @@ router.post(
         });
       }
 
-      // Parse questions from OCR text
+      // Vragen ophalen uit OCR text
       const questions = parseQuestionsFromText(ocrResult.text);
 
       if (questions.length === 0) {
@@ -262,7 +262,7 @@ router.post(
         });
       }
 
-      // Upload to Supabase Storage (optional - for keeping records)
+      // Upload naar Supabase Storage (optioneel - voor het bijhouden van records)
       const storageResult = await uploadToSupabaseStorage(
         tempFilePath,
         req.file.originalname,
@@ -287,10 +287,10 @@ router.post(
 
       if (dbError) {
         console.error("Error saving upload record:", dbError);
-        // Continue anyway - the main functionality works
+        // Doorgaan, core functionaliteit werkt
       }
 
-      // Cleanup temp file
+      // Tijdelijk bestand verwijderen
       await cleanupTempFile(tempFilePath);
 
       res.json({
@@ -309,7 +309,7 @@ router.post(
     } catch (error) {
       console.error("Upload and OCR error:", error);
 
-      // Cleanup temp file in case of error
+      // Tijdelijk bestand verwijderen bij error
       if (tempFilePath) {
         await cleanupTempFile(tempFilePath);
       }
@@ -393,7 +393,7 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    // Parse questions from stored text if available
+    // Vragen ophalen uit opgeslagen tekst indien beschikbaar
     let questions = [];
     if (upload.extracted_text) {
       questions = parseQuestionsFromText(upload.extracted_text);
@@ -422,7 +422,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Get upload details first
+    // Eerst upload record ophalen om te controleren of het bestaat
     const { data: upload, error: getError } = await supabaseAdmin
       .from("uploaded_images")
       .select("file_path, user_id")
@@ -437,7 +437,7 @@ router.delete("/:id", async (req, res) => {
       });
     }
 
-    // Delete from Supabase Storage if it exists
+    // Verwijder uit Supabase Storage als het bestaat
     if (upload.file_path && upload.file_path.includes(req.user.id)) {
       const { error: storageError } = await supabase.storage
         .from("question-images")
@@ -445,11 +445,11 @@ router.delete("/:id", async (req, res) => {
 
       if (storageError) {
         console.error("Error deleting from storage:", storageError);
-        // Continue anyway
+        // Doorgaan, core functionaliteit werkt
       }
     }
 
-    // Delete from database
+    // Delete uit database
     const { error: deleteError } = await supabaseAdmin
       .from("uploaded_images")
       .delete()

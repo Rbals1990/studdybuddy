@@ -69,9 +69,9 @@ export default function StuddyBuddyLanding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-teal-50">
-      {/* Hero Section */}
+      {/* Hero Sectie */}
       <section className="relative overflow-hidden">
-        {/* Background Pattern */}
+        {/* Achtergrond Patroon */}
         <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-blue-600/10"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
@@ -162,7 +162,7 @@ export default function StuddyBuddyLanding() {
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Voordelen sectie */}
       <section className="py-20 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -207,7 +207,7 @@ export default function StuddyBuddyLanding() {
         </div>
       </section>
 
-      {/* How It Works Demo */}
+      {/* Hoe werkt het demo */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">

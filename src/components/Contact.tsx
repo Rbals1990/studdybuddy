@@ -9,13 +9,14 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
 
+  //bij Annuuleren terug naar home
   const handleCancel = () => {
     navigate("/home");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    //Validatie + error handling
     if (!name.trim() || !message.trim()) {
       alert("Vul alle velden in!");
       return;

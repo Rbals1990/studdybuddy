@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    // Transporter instellen (voorbeeld met Gmail)
+    // Transporter instellen (met Gmail)
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -31,7 +31,7 @@ router.post("/", async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-
+    //Bevestiging versturen bericht of foutmelding
     res.status(200).json({ message: "Bericht succesvol verzonden." });
   } catch (error) {
     console.error("Fout bij verzenden mail:", error);

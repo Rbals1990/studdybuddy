@@ -262,7 +262,7 @@ export default function Manual() {
       }
 
       if (result) {
-        // Dan naar toets navigeren met de opgeslagen data
+        // Navigeer naar toets met de vragen
         navigate("/toets", {
           state: {
             pairs: result.data.questions.map((q: Question) => ({

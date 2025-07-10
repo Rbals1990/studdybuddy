@@ -66,7 +66,7 @@ const practiceSessionValidation = [
 ];
 
 // ========================================
-// HELPER FUNCTIONS
+// HELPER FUNCTIES
 // ========================================
 
 const checkQuestionSetOwnership = async (setId, userId) => {
@@ -96,7 +96,7 @@ router.get("/", async (req, res) => {
     } = req.query;
     const offset = (page - 1) * limit;
 
-    // Valideer sort en order parameters
+    // Valideer sorteer en order parameters
     const validSortFields = ["created_at", "updated_at", "name"];
     const validOrderValues = ["asc", "desc"];
 
@@ -142,7 +142,7 @@ router.get("/", async (req, res) => {
 
     if (countError) {
       console.error("Error getting count:", countError);
-      // Continue zonder count - niet kritiek
+      // Continue zonder count
     }
 
     // Formatteer de data voor frontend
@@ -159,7 +159,7 @@ router.get("/", async (req, res) => {
         created_at: q.created_at,
       })),
       question_count: set.questions.length,
-      last_score: null, // TODO: Implementeer als je practice sessions hebt
+      last_score: null,
     }));
 
     res.json({
@@ -210,7 +210,7 @@ router.get("/:id", uuidValidation, async (req, res) => {
       });
     }
 
-    // Get question set with questions
+    // Haal vragen op met antwoorden
     const { data: questionSet, error: setError } = await supabaseAdmin
       .from("question_sets")
       .select(
@@ -238,7 +238,7 @@ router.get("/:id", uuidValidation, async (req, res) => {
       });
     }
 
-    // Get questions for this set
+    // Vragen voor deze set
     const { data: questions, error: questionsError } = await supabaseAdmin
       .from("questions")
       .select("id, question, answer, question_order")
@@ -253,7 +253,7 @@ router.get("/:id", uuidValidation, async (req, res) => {
       });
     }
 
-    // Format response to match frontend expectations
+    // Formatteren van de set voor de frontend
     const formattedSet = {
       id: questionSet.id,
       name: questionSet.name,
@@ -264,7 +264,7 @@ router.get("/:id", uuidValidation, async (req, res) => {
         id: q.id,
         question: q.question,
         answer: q.answer,
-        created_at: null, // Not needed for individual fetch
+        created_at: null,
       })),
       question_count: questions.length,
       last_score: questionSet.last_score,
@@ -299,7 +299,7 @@ router.post("/", questionSetValidation, async (req, res) => {
 
     const { name, description = "", questions } = req.body;
 
-    // Start database transaction
+    // Start database transactie
     const { data: questionSet, error: setError } = await supabaseAdmin
       .from("question_sets")
       .insert([
@@ -321,7 +321,7 @@ router.post("/", questionSetValidation, async (req, res) => {
       });
     }
 
-    // Insert questions
+    // Vraag toevoegen
     const questionsToInsert = questions.map((q, index) => ({
       set_id: questionSet.id,
       question: q.question.trim(),
@@ -334,7 +334,7 @@ router.post("/", questionSetValidation, async (req, res) => {
 
     if (questionsError) {
       console.error("Error inserting questions:", questionsError);
-      // Cleanup: delete the question set if questions failed
+      // Cleanup: set verwijderen indien vragen niet succesvol zijn toegevoegd
       await supabaseAdmin
         .from("question_sets")
         .delete()
@@ -392,7 +392,7 @@ router.put(
         });
       }
 
-      // Update question set
+      // Update vragenset
       const { data: updatedSet, error: setError } = await supabaseAdmin
         .from("question_sets")
         .update({
@@ -413,7 +413,7 @@ router.put(
         });
       }
 
-      // Delete existing questions
+      // Delete bestaande vragen
       const { error: deleteError } = await supabaseAdmin
         .from("questions")
         .delete()
@@ -427,7 +427,7 @@ router.put(
         });
       }
 
-      // Insert new questions
+      // Toevoegen nieuwe vragen
       const questionsToInsert = questions.map((q, index) => ({
         set_id: id,
         question: q.question.trim(),
@@ -492,7 +492,7 @@ router.delete("/:id", uuidValidation, async (req, res) => {
       });
     }
 
-    // Get the name before deleting for confirmation message
+    // naam ophalen voor delete
     const { data: setToDelete, error: getError } = await supabaseAdmin
       .from("question_sets")
       .select("name")
@@ -503,7 +503,7 @@ router.delete("/:id", uuidValidation, async (req, res) => {
       console.error("Error getting set name:", getError);
     }
 
-    // Delete question set (cascade will delete questions and related data)
+    // Delete vragenset (inclusief cascade)
     const { error } = await supabaseAdmin
       .from("question_sets")
       .delete()
@@ -562,7 +562,7 @@ router.post(
         });
       }
 
-      // Create practice session
+      // Oefensessie aanmaken
       const { data: session, error: sessionError } = await supabaseAdmin
         .from("practice_sessions")
         .insert([
@@ -586,7 +586,7 @@ router.post(
         });
       }
 
-      // Insert question results if provided
+      // toevoegen resultaat als dit bekend is
       if (results && results.length > 0) {
         const resultsToInsert = results.map((result) => ({
           session_id: session.id,
@@ -602,11 +602,11 @@ router.post(
 
         if (resultsError) {
           console.error("Error inserting question results:", resultsError);
-          // Continue anyway - session is more important than detailed results
+          //Doorgaan maar fout loggen
         }
       }
 
-      // Update question set statistics
+      // Update vragenset statistieken
       const { data: currentSet, error: getSetError } = await supabaseAdmin
         .from("question_sets")
         .select("times_practiced, best_score")
@@ -628,7 +628,7 @@ router.post(
 
         if (updateSetError) {
           console.error("Error updating set statistics:", updateSetError);
-          // Continue anyway
+          // Doorgaan maar fout loggen
         }
       }
 
@@ -676,7 +676,7 @@ router.get("/:id/stats", uuidValidation, async (req, res) => {
       });
     }
 
-    // Get basic stats
+    // Basis info ophalen
     const { data: questionSet, error: setError } = await supabaseAdmin
       .from("question_sets")
       .select(
@@ -700,7 +700,7 @@ router.get("/:id/stats", uuidValidation, async (req, res) => {
       });
     }
 
-    // Get recent practice sessions (last 10)
+    // Ophalen laatste 10 oefenresultaten
     const { data: recentSessions, error: sessionsError } = await supabaseAdmin
       .from("practice_sessions")
       .select("score, completed_at, time_spent")
@@ -710,7 +710,7 @@ router.get("/:id/stats", uuidValidation, async (req, res) => {
 
     if (sessionsError) {
       console.error("Error fetching recent sessions:", sessionsError);
-      // Continue without recent sessions
+      // Doorgaan zonder ophalen sessies, fout loggen
     }
 
     // Calculate average score

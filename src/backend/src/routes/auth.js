@@ -56,7 +56,7 @@ const loginValidation = [
 ];
 
 // ========================================
-// HELPER FUNCTIONS
+// HELPER FUNCTIES
 // ========================================
 
 const generateJWT = (userId, email) => {
@@ -123,7 +123,7 @@ router.post("/register", authLimiter, registerValidation, async (req, res) => {
       await supabaseAdmin.auth.admin.createUser({
         email: email,
         password: password,
-        email_confirm: true, // Skip email verification voor development
+        email_confirm: true,
       });
 
     if (authError) {
@@ -142,7 +142,7 @@ router.post("/register", authLimiter, registerValidation, async (req, res) => {
           id: authUser.user.id,
           first_name: firstName,
           email: email,
-          password: hashedPassword, // Als je dit in je schema hebt toegevoegd
+          password: hashedPassword,
         },
       ])
       .select()
@@ -159,7 +159,7 @@ router.post("/register", authLimiter, registerValidation, async (req, res) => {
       });
     }
 
-    // Generate JWT token
+    // Genereer JWT token
     const token = generateJWT(profile.id, profile.email);
 
     res.status(201).json({
@@ -223,7 +223,7 @@ router.post("/login", authLimiter, loginValidation, async (req, res) => {
       });
     }
 
-    // Generate JWT token
+    // Genereer JWT token
     const token = generateJWT(user.id, user.email);
 
     res.json({
@@ -274,7 +274,7 @@ router.get("/me", async (req, res) => {
 
     const token = authHeader.substring(7);
 
-    // Verify JWT
+    // Verifieer JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Haal gebruiker op

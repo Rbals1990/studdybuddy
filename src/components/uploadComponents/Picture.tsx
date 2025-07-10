@@ -74,7 +74,7 @@ export default function Picture() {
       };
       reader.readAsDataURL(file);
 
-      // Reset previous results
+      // Reset eerdere resultaten
       setOcrText("");
       setParsedQuestions([]);
       setShowResults(false);
@@ -157,7 +157,7 @@ export default function Picture() {
         /\s{4,}/, // 4 of meer spaties (meest waarschijnlijk voor kolommen)
         /\t+/, // tabs
         /\s{3}/, // 3 spaties
-        /\s{2}/, // 2 spaties (voorzichtig, kan binnen woorden voorkomen)
+        /\s{2}/, // 2 spaties (let op, kan ook binnen woorden voorkomen)
       ];
 
       for (const separator of separators) {

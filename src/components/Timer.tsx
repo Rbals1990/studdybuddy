@@ -12,7 +12,7 @@ export default function StuddyBuddyTimer() {
   const [buttonPosition, setButtonPosition] = useState({ x: 50, y: 50 });
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Create audio context and sound
+  // Audio context en geluid instellingen
   const createNotificationSound = () => {
     if (!soundEnabled) return;
 
@@ -22,7 +22,7 @@ export default function StuddyBuddyTimer() {
         (window as unknown as { webkitAudioContext: typeof AudioContext })
           .webkitAudioContext)();
 
-      // Create a pleasant notification sound (ascending bell-like tone)
+      // Aangename toon creëren
       const createTone = (
         frequency: number,
         duration: number,
@@ -56,9 +56,9 @@ export default function StuddyBuddyTimer() {
       };
 
       for (let i = 0; i < 3; i++) {
-        const baseDelay = i * 1.8; // 1.8 seconds between each complete chime
+        const baseDelay = i * 1.8; // 1.8 seconden tussen tonen
 
-        // Play a pleasant 3-tone chime
+        // Speel een aangename 3-toon melodie
         createTone(523.25, 0.5, baseDelay + 0); // C5
         createTone(659.25, 0.5, baseDelay + 0.2); // E5
         createTone(783.99, 0.8, baseDelay + 0.4); // G5
@@ -68,18 +68,18 @@ export default function StuddyBuddyTimer() {
     }
   };
 
-  // Function to bring tab to focus and show notification
+  // Functie voor focus en notificatie
   const alertUser = () => {
-    // Focus the window/tab
+    // Focus het tabblad
     window.focus();
 
-    // Change the document title to attract attention
+    // Verander de documenttitel om aandacht te trekken
     document.title = "⏰ PAUZE TIJD! - StuddyBuddy Timer";
 
-    // Play notification sound
+    // Speel notificatiegeluid
     createNotificationSound();
 
-    // Optional: Show browser notification (requires permission)
+    // Optioneel: Toon browser notificatie (vereist toestemming)
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification("StuddyBuddy Timer", {
         body: "Tijd voor een pauze! 🎉",
@@ -87,33 +87,33 @@ export default function StuddyBuddyTimer() {
       });
     }
 
-    // Flash the page background to attract attention
+    // Achtergrondkleur flash om aandacht te trekken
     document.body.style.backgroundColor = "#fbbf24";
     setTimeout(() => {
       document.body.style.backgroundColor = "";
     }, 500);
   };
 
-  // Test sound function
+  // Functie om testgeluid af te spelen
   const testSound = () => {
     createNotificationSound();
   };
 
-  // Request notification permission on component mount
+  // Vraag notificatie toestemming aan bij het mounten van de component
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
   }, []);
 
-  // Reset document title when timer is active or reset
+  // Reset de titel wanneer de timer actief is of pauze is
   useEffect(() => {
     if (isActive || (!showBreakMessage && timeLeft === 0)) {
       document.title = "StuddyBuddy Timer";
     }
   }, [isActive, showBreakMessage, timeLeft]);
 
-  // Timer logic with more accurate timing
+  // Logica voor naukeurigere timer
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     let startTime: number | null = null;
@@ -134,7 +134,7 @@ export default function StuddyBuddyTimer() {
           setIsActive(false);
           setShowBreakMessage(true);
           setBreakStartTime(Date.now());
-          // Alert the user when timer finishes
+          // Melden einde timer
           alertUser();
           if (interval) clearInterval(interval);
         }
@@ -146,7 +146,7 @@ export default function StuddyBuddyTimer() {
     };
   }, [isActive, isPaused]);
 
-  // Break timer logic
+  // Break timer logica
   useEffect(() => {
     let breakInterval: NodeJS.Timeout | null = null;
 
@@ -164,7 +164,7 @@ export default function StuddyBuddyTimer() {
     };
   }, [showBreakMessage, breakStartTime]);
 
-  // Moving button logic during break
+  // Bewegende button tijdens countdown
   useEffect(() => {
     let moveInterval: NodeJS.Timeout | null = null;
 
@@ -203,7 +203,7 @@ export default function StuddyBuddyTimer() {
     setShowBreakMessage(false);
     setCanContinue(false);
     setBreakStartTime(null);
-    // Reset document title
+    // Reset de titel
     document.title = "StuddyBuddy Timer";
   };
 
@@ -212,9 +212,9 @@ export default function StuddyBuddyTimer() {
       setShowBreakMessage(false);
       setCanContinue(false);
       setBreakStartTime(null);
-      // Reset document title
+      // Reset de titel
       document.title = "StuddyBuddy Timer";
-      // Ready for next round - reset to selection
+      // Nieuwe ronde starten
       resetTimer();
     }
   };
@@ -235,7 +235,7 @@ export default function StuddyBuddyTimer() {
 
   return (
     <div className="min-h-screen bg-[#FFFAEF]">
-      {/* Notification permission prompt */}
+      {/* Notificatie toestemming prompt */}
       {"Notification" in window && Notification.permission === "default" && (
         <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4">
           <p className="text-sm">
@@ -245,7 +245,7 @@ export default function StuddyBuddyTimer() {
         </div>
       )}
 
-      {/* Sound control */}
+      {/* Geluidsinstellingen */}
       <div className="absolute top-4 right-4 z-10">
         <div className="flex items-center space-x-2 bg-white rounded-lg shadow-md p-2">
           <button
@@ -286,7 +286,7 @@ export default function StuddyBuddyTimer() {
             </h2>
 
             {!isActive && timeLeft === 0 ? (
-              // Timer Selection
+              // Timer Selectie
               <div className="space-y-6">
                 <p
                   className="text-lg text-gray-600 mb-8"
@@ -321,7 +321,7 @@ export default function StuddyBuddyTimer() {
                 </div>
               </div>
             ) : (
-              // Active Timer Display
+              // Actieve Timer Display
               <div className="space-y-8">
                 <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md mx-auto">
                   <div className="text-center">
@@ -374,7 +374,7 @@ export default function StuddyBuddyTimer() {
             )}
           </div>
         ) : (
-          // Break Message - now with pulsing animation to attract attention
+          // Pauze bericht
           <div className="text-center relative h-96">
             <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md mx-auto animate-pulse">
               <h2

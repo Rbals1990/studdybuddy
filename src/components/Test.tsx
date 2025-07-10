@@ -24,7 +24,7 @@ export default function Test() {
     { question: string; correct: string; given: string }[]
   >([]);
 
-  // 👇 Extract and validate location state
+  // 👇 Extract en valideer location state
   const state = location.state as LocationState;
   const incomingPairs = state?.pairs;
 

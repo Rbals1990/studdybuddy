@@ -12,7 +12,7 @@ import questionRoutes from "./routes/questions.js";
 import uploadRoutes from "./routes/upload.js";
 import contactRoutes from "./routes/contact.js";
 
-// Load environment variables
+// Load .env variables
 dotenv.config();
 
 const app = express();
@@ -105,7 +105,7 @@ app.use((error, req, res, next) => {
 
 const startServer = async () => {
   try {
-    // Test database connection
+    // Test database connectie
     const dbConnected = await testConnection();
     if (!dbConnected) {
       console.error("Failed to connect to database. Exiting...");
