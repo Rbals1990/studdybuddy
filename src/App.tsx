@@ -21,9 +21,7 @@ import Test from "./components/Test";
 import Timer from "./components/Timer";
 import NotFound from "./components/NotFound";
 import { TimerProvider } from "./components/TimerProvider";
-
-//layouts
-import BasicLayout from "./layouts/BasicLayout.tsx";
+import BasicLayout from "./components/BasicLayout";
 
 //router
 const router = createBrowserRouter(
