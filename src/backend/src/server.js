@@ -45,7 +45,7 @@ app.use(
     origin: [
       process.env.FRONTEND_URL || "http://localhost:5173",
       "http://localhost:3000", // backup voor andere React ports
-      "https://your-netlify-domain.netlify.app", // Update later
+      "https://studdy-buddy.netlify.app", // Netlify frontend
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
