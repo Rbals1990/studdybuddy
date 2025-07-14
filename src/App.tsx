@@ -23,7 +23,7 @@ import NotFound from "./components/NotFound";
 import { TimerProvider } from "./components/TimerProvider";
 
 //layouts
-import BasicLayout from "./layouts/BasicLayout";
+import BasicLayout from "./layouts/BasicLayout.tsx";
 
 //router
 const router = createBrowserRouter(
