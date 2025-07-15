@@ -6,7 +6,7 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import { testConnection } from "./config/database.js";
 
-// Import routes (we maken deze in de volgende stap)
+// Import routes
 import authRoutes from "./routes/auth.js";
 import questionRoutes from "./routes/questions.js";
 import uploadRoutes from "./routes/upload.js";
@@ -39,19 +39,54 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// CORS configuration
-app.use(
-  cors({
-    origin: [
-      process.env.FRONTEND_URL || "http://localhost:5173",
-      "http://localhost:3000", // backup voor andere React ports
-      "https://studdy-buddy.netlify.app", // Netlify frontend
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// CORS configuration - VERBETERD
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://studdy-buddy.netlify.app",
+].filter(Boolean); // Remove undefined values
+
+console.log("Allowed CORS origins:", allowedOrigins);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error(`Not allowed by CORS policy. Origin: ${origin}`));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+  ],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Explicit preflight handler
+app.options("*", cors(corsOptions));
+
+// Debug middleware (tijdelijk voor troubleshooting)
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log(`Origin: ${req.headers.origin || "No origin"}`);
+  console.log(`User-Agent: ${req.headers["user-agent"] || "No user-agent"}`);
+  next();
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
@@ -70,6 +105,16 @@ app.get("/health", (req, res) => {
     status: "OK",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
+    allowedOrigins: allowedOrigins,
+  });
+});
+
+// CORS test endpoint
+app.get("/api/test-cors", (req, res) => {
+  res.json({
+    message: "CORS is working!",
+    origin: req.headers.origin,
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -83,12 +128,23 @@ app.use("/api/contact", contactRoutes);
 app.use("*", (req, res) => {
   res.status(404).json({
     error: "Route not found",
+    path: req.originalUrl,
+    method: req.method,
   });
 });
 
 // Global error handler
 app.use((error, req, res, next) => {
   console.error("Global error handler:", error);
+
+  // CORS error specifiek afhandelen
+  if (error.message.includes("Not allowed by CORS")) {
+    return res.status(403).json({
+      error: "CORS policy violation",
+      message: error.message,
+      origin: req.headers.origin,
+    });
+  }
 
   res.status(error.status || 500).json({
     error:
@@ -117,10 +173,8 @@ const startServer = async () => {
       console.log(`🚀 StuddyBuddy API running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-
-      if (process.env.NODE_ENV === "development") {
-        console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL}`);
-      }
+      console.log(`🌐 CORS enabled for origins:`, allowedOrigins);
+      console.log(`🔑 JWT Secret configured: ${!!process.env.JWT_SECRET}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
