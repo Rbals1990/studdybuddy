@@ -37,6 +37,14 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
+      <Route
+          path="/timer"
+          element={
+            <ProtectedRoute>
+              <Timer />
+            </ProtectedRoute>
+          }
+      />
       {/*Routes met BasicLayout*/}
       <Route path="/" element={<BasicLayout />}>
         {/*all acces Routes*/}
@@ -76,14 +84,7 @@ const router = createBrowserRouter(
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/timer"
-          element={
-            <ProtectedRoute>
-              <Timer />
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/toets"
           element={
