@@ -69,7 +69,7 @@ export default function PickFromDb() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/questions", {
+      const response = await fetch("https://studdybuddy-fsja.onrender.com/api/questions", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -173,7 +173,7 @@ export default function PickFromDb() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/questions/${setId}`,
+        `https://studdybuddy-fsja.onrender.com/api/questions/${setId}`,
         {
           method: "DELETE",
           headers: {

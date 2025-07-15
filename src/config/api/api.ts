@@ -2,7 +2,7 @@
 
 // API Base URL configuration
 export const API_BASE_URL = import.meta.env.PROD
-  ? "https://studdybuddy-fsja.onrender.com" // Vervang dit later met je echte Render URL
+  ? "https://studdybuddy-fsja.onrender.com" // Render Backend URL
   : "http://localhost:5000"; // Development URL
 
 // Helper functie voor API calls

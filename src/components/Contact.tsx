@@ -32,7 +32,7 @@ export default function Contact() {
     try {
       const response = await fetch(
         `${
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
+          import.meta.env.VITE_API_BASE_URL || "https://studdybuddy-fsja.onrender.com"
         }/api/contact`,
         {
           method: "POST",
